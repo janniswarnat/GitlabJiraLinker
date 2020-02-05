@@ -2,17 +2,13 @@ package efactory.tools;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.itextpdf.io.font.constants.StandardFonts;
-import com.itextpdf.kernel.font.PdfFontFactory;
-import com.itextpdf.kernel.geom.PageSize;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Cell;
-import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.property.TextAlignment;
-import com.itextpdf.layout.property.VerticalAlignment;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -25,7 +21,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Properties;
 
 public class GitlabJiraLinker {
 
@@ -36,7 +31,9 @@ public class GitlabJiraLinker {
     static String jiraUserPass = null;
     static String jiraIssuesApiUrl = null;
     static String jiraIssuesBrowseUrl = null;
+    static String containerString = "#--#";
 
+    //fetch information about particular issue from Jira API
     public static JiraIssue getJiraIssue(String id) {
         CloseableHttpClient client = HttpClients.createDefault();
         HttpGet httpGet = new HttpGet(jiraIssuesApiUrl + id);
@@ -61,6 +58,7 @@ public class GitlabJiraLinker {
         return result;
     }
 
+    //recursively (because of pagination) fetch all Gitlab issues via Gitlab API
     public static ArrayList recursiveGet(String uri, ArrayList result) {
         CloseableHttpClient client = HttpClients.createDefault();
         HttpGet httpGet = new HttpGet(uri);
@@ -95,76 +93,78 @@ public class GitlabJiraLinker {
     }
 
     public static void main(String args[]) throws IOException {
+        //read properties from parameters
         gitlabIssuesUrl = System.getProperty("gitlab.issues-url");
         gitlabAuthHeader = "Bearer " + System.getProperty("gitlab.access-token");
         jiraIssuesApiUrl = System.getProperty("jira.issues-api-url");
         jiraIssuesBrowseUrl = System.getProperty("jira.issues-browse-url");
         jiraUserPass = System.getProperty("jira.username") + ":" + System.getProperty("jira.password");
         jiraAuthHeader = "Basic " + Base64.getEncoder().encodeToString(jiraUserPass.getBytes());
+
+        //fetch all Gitlab issues
         ArrayList<GitlabIssue> result = new ArrayList<GitlabIssue>();
         recursiveGet(gitlabIssuesUrl, result);
 
-        PdfDocument pdf = null;
-        try {
-            pdf = new PdfDocument(new PdfWriter("issue_links.pdf"));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        Document document = new Document(pdf, PageSize.A4.rotate());
-
-
-        Table table = new Table(2);
-        Cell cell = new Cell(1, 1)
-                .setTextAlignment(TextAlignment.CENTER)
-                .add(new Paragraph("Gitlab issues"));
-        table.addCell(cell);
-        cell = new Cell(1, 1)
-                .add(new Paragraph("Linked Jira issues"))
-                .setTextAlignment(TextAlignment.CENTER);
-        table.addCell(cell);
+        // create workbook and column headers
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("Issue_links");
+        int rowCount = -1;
+        Row row = sheet.createRow(++rowCount);
+        int columnCount = -1;
+        XSSFCellStyle boldStyle = workbook.createCellStyle();
+        XSSFFont font = workbook.createFont();
+        font.setBold(true);
+        boldStyle.setFont(font);
+        Cell cell = row.createCell(++columnCount);
+        cell.setCellValue("Gitlab issue web URL");
+        cell.setCellStyle(boldStyle);
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("Gitlab issue title");
+        cell.setCellStyle(boldStyle);
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("Gitlab issue state");
+        cell.setCellStyle(boldStyle);
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("Linked Jira issues");
+        cell.setCellStyle(boldStyle);
 
         for (GitlabIssue issue : result) {
 
+            //write Gitlab issue information to workbook
             String description = issue.getDescription();
+            row = sheet.createRow(++rowCount);
+            columnCount = -1;
+            cell = row.createCell(++columnCount);
+            cell.setCellValue(issue.getWebUrl());
+            cell = row.createCell(++columnCount);
+            cell.setCellValue(issue.getTitle());
+            cell = row.createCell(++columnCount);
+            cell.setCellValue(issue.getState());
 
-            cell = new Cell(1, 1)
-                    .add(new Paragraph(issue.toString()))
-                    .setVerticalAlignment(VerticalAlignment.MIDDLE).setFont(PdfFontFactory.createFont(StandardFonts.COURIER)).setFontSize(8);
+            //check for linked Jira issues in description
+            if (description != null && description.contains(containerString)) {
+                int i = description.indexOf(containerString, 0);
+                int j = description.indexOf(containerString, i + containerString.length());
 
-            table.addCell(cell);
-            if (description != null && description.contains("###")) {
-                System.out.println(issue.toString());
-
-                int i = description.indexOf("###", 0);
-                int j = description.indexOf("###", i + 3);
-                String[] jiraIssues = description.substring(i + 3, j).split(",");
-
-
-                System.out.println("Linked to Jira issues:");
+                //multiple Jira issues need to be comma separated
+                String[] jiraIssues = description.substring(i + containerString.length(), j).split(",");
                 String linksCombined = "";
                 for (String jiraIssueKey : jiraIssues) {
-                    JiraIssue jiraIssue = getJiraIssue(jiraIssueKey);
-                    String printIssue = jiraIssue.getFields().getSummary() + " (" + jiraIssuesBrowseUrl + jiraIssue.getKey() + ")";
-                    System.out.println(printIssue);
-                    linksCombined += printIssue + "\n";
+                    if(jiraIssueKey != null && jiraIssueKey.contains("EF-")) {
+                        JiraIssue jiraIssue = getJiraIssue(jiraIssueKey.trim());
+                        String printIssue = jiraIssue.getFields().getSummary() + " (" + jiraIssuesBrowseUrl + jiraIssue.getKey() + ")";
+                        linksCombined += printIssue + ";";
+                    }
                 }
-                cell = new Cell(1, 1)
-                        .add(new Paragraph(linksCombined))
-                        .setVerticalAlignment(VerticalAlignment.MIDDLE).setFont(PdfFontFactory.createFont(StandardFonts.COURIER)).setFontSize(8);
-                table.addCell(cell);
-            } else {
-                cell = new Cell(1, 1)
-                        .add(new Paragraph(""))
-                        .setVerticalAlignment(VerticalAlignment.MIDDLE).setFont(PdfFontFactory.createFont(StandardFonts.COURIER)).setFontSize(8);
-                table.addCell(cell);
+                //write linked Jira issues to Excel
+                cell = row.createCell(++columnCount);
+                cell.setCellValue(linksCombined);
             }
         }
 
-
-        document.add(table);
-        document.close();
-
+        try (FileOutputStream outputStream = new FileOutputStream("Issue_links.xlsx")) {
+            workbook.write(outputStream);
+        }
 
     }
 }
