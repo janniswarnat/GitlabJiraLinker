@@ -95,27 +95,18 @@ public class GitlabJiraLinker {
     }
 
     public static void main(String args[]) throws IOException {
-
-        Properties prop = null;
-        try (InputStream input = new FileInputStream("linker.properties")) {
-            prop = new Properties();
-            prop.load(input);
-            gitlabIssuesUrl = prop.getProperty("gitlab.issues-url");
-            gitlabAuthHeader = "Bearer " + prop.getProperty("gitlab.access-token");
-            jiraIssuesApiUrl = prop.getProperty("jira.issues-api-url");
-            jiraIssuesBrowseUrl = prop.getProperty("jira.issues-browse-url");
-            jiraUserPass = prop.getProperty("jira.username") + ":" + prop.getProperty("jira.password");
-            jiraAuthHeader = "Basic " + Base64.getEncoder().encodeToString(jiraUserPass.getBytes());
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
+        gitlabIssuesUrl = System.getProperty("gitlab.issues-url");
+        gitlabAuthHeader = "Bearer " + System.getProperty("gitlab.access-token");
+        jiraIssuesApiUrl = System.getProperty("jira.issues-api-url");
+        jiraIssuesBrowseUrl = System.getProperty("jira.issues-browse-url");
+        jiraUserPass = System.getProperty("jira.username") + ":" + System.getProperty("jira.password");
+        jiraAuthHeader = "Basic " + Base64.getEncoder().encodeToString(jiraUserPass.getBytes());
         ArrayList<GitlabIssue> result = new ArrayList<GitlabIssue>();
         recursiveGet(gitlabIssuesUrl, result);
 
         PdfDocument pdf = null;
         try {
-            pdf = new PdfDocument(new PdfWriter("iTextTable.pdf"));
+            pdf = new PdfDocument(new PdfWriter("issue_links.pdf"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
