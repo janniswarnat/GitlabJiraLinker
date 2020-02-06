@@ -1,5 +1,6 @@
 package efactory.tools;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -272,6 +273,17 @@ public class JiraIssue {
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
+    public ArrayList<GitlabIssue> getLinkedGitlabIssues() {
+        return linkedGitlabIssues;
+    }
+
+    public void setLinkedGitlabIssues(ArrayList<GitlabIssue> linkedGitlabIssues) {
+        this.linkedGitlabIssues = linkedGitlabIssues;
+    }
+
+    @JsonIgnore
+    private ArrayList<GitlabIssue> linkedGitlabIssues = new ArrayList<GitlabIssue>();
+
     @JsonProperty("id")
     public String getId() {
         return id;
@@ -320,6 +332,11 @@ public class JiraIssue {
     @JsonAnySetter
     public void setAdditionalProperty(String name, Object value) {
         this.additionalProperties.put(name, value);
+    }
+
+    public String toString()
+    {
+       return (this.getKey()+" "+this.getFields().getSummary());
     }
 }
 
