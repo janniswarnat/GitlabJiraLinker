@@ -142,7 +142,7 @@ public class GitlabJiraLinker {
         //write issues to html
         ContainerTag page = html(
                 head(
-                        title("Jira issues overview")
+                        title("Jira issues")
                 ),
                 body(
                         div(attrs("#jiraIssues"),
@@ -162,7 +162,7 @@ public class GitlabJiraLinker {
                 )
         );
 
-        Appendable writer = new FileWriter("rendered.html");
+        Appendable writer = new FileWriter("jira-issues.html");
         page.render(writer);
         ((FileWriter) writer).close();
 
