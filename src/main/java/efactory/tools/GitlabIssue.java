@@ -3,12 +3,7 @@ package efactory.tools;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -20,11 +15,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
         "title",
         "description",
         "state",
-        "created_at",
-        "updated_at",
         "closed_at",
         "web_url"
 })
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class GitlabIssue {
 
     static ObjectMapper mapper = new ObjectMapper();
@@ -41,10 +35,6 @@ public class GitlabIssue {
     private String description;
     @JsonProperty("state")
     private String state;
-    @JsonProperty("created_at")
-    private String createdAt;
-    @JsonProperty("updated_at")
-    private String updatedAt;
     @JsonProperty("closed_at")
     private String closedAt;
     @JsonProperty("web_url")
@@ -112,26 +102,6 @@ public class GitlabIssue {
         this.state = state;
     }
 
-    @JsonProperty("created_at")
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    @JsonProperty("created_at")
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    @JsonProperty("updated_at")
-    public String getUpdatedAt() {
-        return updatedAt;
-    }
-
-    @JsonProperty("updated_at")
-    public void setUpdatedAt(String updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
     @JsonProperty("closed_at")
     public String getClosedAt() {
         return closedAt;
@@ -152,12 +122,14 @@ public class GitlabIssue {
         this.webUrl = webUrl;
     }
 
-    @JsonAnyGetter
+    //@JsonAnyGetter
+    @JsonIgnore
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
     }
 
-    @JsonAnySetter
+    //@JsonAnySetter
+    @JsonIgnore
     public void setAdditionalProperty(String name, Object value) {
         this.additionalProperties.put(name, value);
     }

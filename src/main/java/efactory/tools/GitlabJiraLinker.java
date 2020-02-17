@@ -3,7 +3,6 @@ package efactory.tools;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import j2html.tags.ContainerTag;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -11,6 +10,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -18,21 +19,83 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 
-import static j2html.TagCreator.*;
-
+@SpringBootApplication
 public class GitlabJiraLinker {
 
-    static ObjectMapper mapper = new ObjectMapper();
-    static String gitlabIssuesUrl = null;
-    static String gitlabAuthHeader = null;
-    static String jiraAuthHeader = null;
-    static String jiraUserPass = null;
-    static String jiraSearchApiUrl = null;
-    static String jiraIssuesBrowseUrl = null;
-    static String containerString = "#--#";
+    private ObjectMapper mapper = new ObjectMapper();
+    private String gitlabIssuesUrl = null;
+    private String gitlabAuthHeader = null;
+    private String jiraAuthHeader = null;
+    private String jiraSearchApiUrl = null;
+    private String jiraIssuesBrowseUrl = null;
+    private String containerString = null;
+
+    public ArrayList<JiraIssue> getJiraIssues() {
+        return jiraIssues;
+    }
+
+    public void setJiraIssues(ArrayList<JiraIssue> jiraIssues) {
+        this.jiraIssues = jiraIssues;
+    }
+
+    private ArrayList<JiraIssue> jiraIssues = null;
+
+    private ArrayList<GitlabIssue> gitlabIssues = null;
+
+    public GitlabJiraLinker() {
+    }
+
+    public GitlabJiraLinker(String gitlabIssuesUrl, String gitlabAccessToken, String jiraUsername, String jiraPassword, String jiraSearchApiUrl, String jiraIssuesBrowseUrl, String containerString) {
+        this.gitlabIssuesUrl = gitlabIssuesUrl;
+        System.out.println("gitlabIssuesUrl = " + gitlabIssuesUrl);
+        this.gitlabAuthHeader = "Bearer "+gitlabAccessToken;
+        System.out.println("gitlabAuthHeader = " + gitlabAuthHeader);
+        this.jiraAuthHeader = "Basic "+Base64.getEncoder().encodeToString((jiraUsername+":"+jiraPassword).getBytes());
+        System.out.println("jiraAuthHeader = " + jiraAuthHeader);
+        this.jiraSearchApiUrl = jiraSearchApiUrl;
+        System.out.println("jiraSearchApiUrl = " + jiraSearchApiUrl);
+        this.jiraIssuesBrowseUrl = jiraIssuesBrowseUrl;
+        System.out.println("jiraIssuesBrowseUrl = " + jiraIssuesBrowseUrl);
+        this.containerString = containerString;
+        System.out.println("containerString = " + containerString);
+
+        //fetch all Gitlab issues
+        gitlabIssues = new ArrayList<GitlabIssue>();
+        recursiveGetGitlabIssues(gitlabIssuesUrl, gitlabIssues);
+
+        //fetch all Jira issues
+        jiraIssues = getJiraIssues(jiraSearchApiUrl);
+        HashMap<String, JiraIssue> jiraIssuesByKey = new HashMap<>();
+
+        //create HashMap to search Jira issues by its keys
+        for (JiraIssue jiraIssue : jiraIssues) {
+            jiraIssuesByKey.put(jiraIssue.getKey(), jiraIssue);
+        }
+
+
+        for (GitlabIssue gitLabIssue : gitlabIssues) {
+
+            //check for linked Jira issues in description
+            String description = gitLabIssue.getDescription();
+            if (description != null && description.contains(containerString)) {
+                int i = description.indexOf(containerString, 0);
+                int j = description.indexOf(containerString, i + containerString.length());
+
+                //multiple Jira issues need to be comma separated
+                String[] linkedJiraIssues = description.substring(i + containerString.length(), j).split(",");
+                for (String jiraIssueKey : linkedJiraIssues) {
+                    if (jiraIssueKey != null && jiraIssueKey.contains("EF-")) {
+                        jiraIssuesByKey.get(jiraIssueKey).getLinkedGitlabIssues().add(gitLabIssue);
+                    }
+                }
+            }
+
+        }
+
+    }
 
     //Fetch all Jira issues via Jira API
-    public static ArrayList getJiraIssues(String uri) {
+    public ArrayList getJiraIssues(String uri) {
         ArrayList<JiraIssue> jiraIssues = new ArrayList<JiraIssue>();
         CloseableHttpClient client = HttpClients.createDefault();
         HttpGet httpGet = new HttpGet(uri);
@@ -64,7 +127,7 @@ public class GitlabJiraLinker {
     }
 
     //recursively (because of pagination) fetch all Gitlab issues via Gitlab API
-    public static ArrayList recursiveGetGitlabIssues(String uri, ArrayList result) {
+    public ArrayList recursiveGetGitlabIssues(String uri, ArrayList result) {
         CloseableHttpClient client = HttpClients.createDefault();
         HttpGet httpGet = new HttpGet(uri);
         httpGet.setHeader("Authorization", gitlabAuthHeader);
@@ -99,72 +162,52 @@ public class GitlabJiraLinker {
 
     public static void main(String args[]) throws IOException {
         //read properties from parameters
-        gitlabIssuesUrl = System.getProperty("gitlab.issues-url");
-        gitlabAuthHeader = "Bearer " + System.getProperty("gitlab.access-token");
-        jiraSearchApiUrl = System.getProperty("jira.search-api-url");
-        jiraIssuesBrowseUrl = System.getProperty("jira.issues-browse-url");
-        jiraUserPass = System.getProperty("jira.username") + ":" + System.getProperty("jira.password");
-        jiraAuthHeader = "Basic " + Base64.getEncoder().encodeToString(jiraUserPass.getBytes());
+        //String gitlabIssuesUrl = System.getProperty("gitlab.issues-url");
+        //String gitlabAuthHeader = "Bearer " + System.getProperty("gitlab.access-token");
+        //String jiraUserPass = System.getProperty("jira.username") + ":" + System.getProperty("jira.password");
+        //String jiraAuthHeader = "Basic " + Base64.getEncoder().encodeToString(jiraUserPass.getBytes());
+        //String jiraSearchApiUrl = System.getProperty("jira.search-api-url");
+        //String jiraIssuesBrowseUrl = System.getProperty("jira.issues-browse-url");
+        //String containerString = "#--#";
 
-        //fetch all Gitlab issues
-        ArrayList<GitlabIssue> gitlabIssues = new ArrayList<GitlabIssue>();
-        recursiveGetGitlabIssues(gitlabIssuesUrl, gitlabIssues);
-
-        //fetch all Jira issues
-        ArrayList<JiraIssue> jiraIssues = getJiraIssues(jiraSearchApiUrl);
-        HashMap<String, JiraIssue> jiraIssuesByKey = new HashMap<>();
-
-        //create HashMap to search Jira issues by its keys
-        for (JiraIssue jiraIssue : jiraIssues) {
-            jiraIssuesByKey.put(jiraIssue.getKey(), jiraIssue);
-        }
+        //GitlabJiraLinker linker = new GitlabJiraLinker(gitlabIssuesUrl, gitlabAuthHeader, jiraAuthHeader, jiraUserPass, jiraSearchApiUrl, jiraIssuesBrowseUrl, containerString);
 
 
-        for (GitlabIssue gitLabIssue : gitlabIssues) {
-
-            //check for linked Jira issues in description
-            String description = gitLabIssue.getDescription();
-            if (description != null && description.contains(containerString)) {
-                int i = description.indexOf(containerString, 0);
-                int j = description.indexOf(containerString, i + containerString.length());
-
-                //multiple Jira issues need to be comma separated
-                String[] linkedJiraIssues = description.substring(i + containerString.length(), j).split(",");
-                for (String jiraIssueKey : linkedJiraIssues) {
-                    if (jiraIssueKey != null && jiraIssueKey.contains("EF-")) {
-                        jiraIssuesByKey.get(jiraIssueKey).getLinkedGitlabIssues().add(gitLabIssue);
-                    }
-                }
-            }
-
-        }
+//        for (JiraIssue issue : linker.getJiraIssues()) {
+//            if (issue.getKey().equals("EF-69")) {
+//                (new ObjectMapper()).writeValue(new File("jira-issue.json"), issue);
+//            }
+//        }
+//
+//        new ObjectMapper().writeValue(new File("gitlab-issue.json"), linker.getGitlabIssues().get(0));
+        SpringApplication.run(GitlabJiraLinker.class, args);
 
         //write issues to html
-        ContainerTag page = html(
-                head(
-                        title("Jira issues")
-                ),
-                body(
-                        div(attrs("#jiraIssues"),
-                                each(jiraIssues, jiraIssue ->
-                                        div(attrs(".jiraIssue"),
-                                                h3(jiraIssue.getKey() + " " + jiraIssue.getFields().getSummary()),
-                                                p("Status: " + jiraIssue.getFields().getStatus().getName()),
-                                                a(jiraIssuesBrowseUrl + jiraIssue.getKey()).withHref(jiraIssuesBrowseUrl + jiraIssue.getKey()),
-                                                h4("Linked Gitlab issues:"),
-                                                ul(each(jiraIssue.getLinkedGitlabIssues(), gitlabIssue -> li(attrs(".gitlabIssue"),
-                                                        h5(gitlabIssue.getTitle()),
-                                                        p("State: " + gitlabIssue.getState()),
-                                                        a(gitlabIssue.getWebUrl()).withHref(gitlabIssue.getWebUrl())
-                                                )))
-                                        ).withStyle("border: 1px solid black"))
-                        )
-                )
-        );
+//        ContainerTag page = html(
+//                head(
+//                        title("Jira issues")
+//                ),
+//                body(
+//                        div(attrs("#jiraIssues"),
+//                                each(jiraIssues, jiraIssue ->
+//                                        div(attrs(".jiraIssue"),
+//                                                h3(jiraIssue.getKey() + " " + jiraIssue.getFields().getSummary()),
+//                                                p("Status: " + jiraIssue.getFields().getStatus().getName()),
+//                                                a(jiraIssuesBrowseUrl + jiraIssue.getKey()).withHref(jiraIssuesBrowseUrl + jiraIssue.getKey()),
+//                                                h4("Linked Gitlab issues:"),
+//                                                ul(each(jiraIssue.getLinkedGitlabIssues(), gitlabIssue -> li(attrs(".gitlabIssue"),
+//                                                        h5(gitlabIssue.getTitle()),
+//                                                        p("State: " + gitlabIssue.getState()),
+//                                                        a(gitlabIssue.getWebUrl()).withHref(gitlabIssue.getWebUrl())
+//                                                )))
+//                                        ).withStyle("border: 1px solid black"))
+//                        )
+//                )
+//        );
 
-        Appendable writer = new FileWriter("jira-issues.html");
-        page.render(writer);
-        ((FileWriter) writer).close();
+//        Appendable writer = new FileWriter("jira-issues.html");
+//        page.render(writer);
+//        ((FileWriter) writer).close();
 
     }
 
