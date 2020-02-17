@@ -47,17 +47,17 @@ public class GitlabJiraLinker {
 
     public GitlabJiraLinker(String gitlabIssuesUrl, String gitlabAccessToken, String jiraUsername, String jiraPassword, String jiraSearchApiUrl, String jiraIssuesBrowseUrl, String containerString) {
         this.gitlabIssuesUrl = gitlabIssuesUrl;
-        System.out.println("gitlabIssuesUrl = " + gitlabIssuesUrl);
+        //System.out.println("gitlabIssuesUrl = " + gitlabIssuesUrl);
         this.gitlabAuthHeader = "Bearer "+gitlabAccessToken;
-        System.out.println("gitlabAuthHeader = " + gitlabAuthHeader);
+        //System.out.println("gitlabAuthHeader = " + gitlabAuthHeader);
         this.jiraAuthHeader = "Basic "+Base64.getEncoder().encodeToString((jiraUsername+":"+jiraPassword).getBytes());
-        System.out.println("jiraAuthHeader = " + jiraAuthHeader);
+        //System.out.println("jiraAuthHeader = " + jiraAuthHeader);
         this.jiraSearchApiUrl = jiraSearchApiUrl;
-        System.out.println("jiraSearchApiUrl = " + jiraSearchApiUrl);
+        //System.out.println("jiraSearchApiUrl = " + jiraSearchApiUrl);
         this.jiraIssuesBrowseUrl = jiraIssuesBrowseUrl;
-        System.out.println("jiraIssuesBrowseUrl = " + jiraIssuesBrowseUrl);
+        //System.out.println("jiraIssuesBrowseUrl = " + jiraIssuesBrowseUrl);
         this.containerString = containerString;
-        System.out.println("containerString = " + containerString);
+        //System.out.println("containerString = " + containerString);
 
         //fetch all Gitlab issues
         gitlabIssues = new ArrayList<GitlabIssue>();
