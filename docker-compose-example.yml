@@ -1,0 +1,17 @@
+version: '3.5'
+services:
+  gitlab-jira-linker:
+    image: "janniswarnat/gitlab-jira-linker:latest"
+    ports:
+      - 8080:8080
+    environment:
+      - GITLAB_ISSUES_URL=https://gitlab.fit.fraunhofer.de/api/v4/issues?per_page=100
+      - GITLAB_ACCESS_TOKEN=***
+      - JIRA_USERNAME=jannis.warnat
+      - JIRA_PASSWORD=***
+      - JIRA_SEARCH_API_URL=http://jira.fit.fraunhofer.de/rest/api/latest/search?jql=project=EF+order+by+key&maxResults=-1
+      - JIRA_ISSUE_BROWSER_URL=https://jira.fit.fraunhofer.de/jira/browse/
+      - CONTAINER_STRING=§§--§§
+
+
+

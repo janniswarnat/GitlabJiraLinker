@@ -43,21 +43,52 @@ public class GitlabJiraLinker {
     private ArrayList<GitlabIssue> gitlabIssues = null;
 
     public GitlabJiraLinker() {
-    }
+        this.gitlabIssuesUrl = System.getenv("GITLAB_ISSUES_URL");
+        String gitlabAccessToken = System.getenv("GITLAB_ACCESS_TOKEN");
+        this.gitlabAuthHeader = "Bearer " + gitlabAccessToken;
+        String jiraUsername = System.getenv("JIRA_USERNAME");
+        String jiraPassword = System.getenv("JIRA_PASSWORD");
+        this.jiraAuthHeader = "Basic " + Base64.getEncoder().encodeToString((jiraUsername + ":" + jiraPassword).getBytes());
+        this.jiraSearchApiUrl = System.getenv("JIRA_SEARCH_API_URL");
+        this.jiraIssuesBrowseUrl = System.getenv("JIRA_ISSUE_BROWSER_URL");
+        this.containerString = System.getenv("CONTAINER_STRING");
 
-    public GitlabJiraLinker(String gitlabIssuesUrl, String gitlabAccessToken, String jiraUsername, String jiraPassword, String jiraSearchApiUrl, String jiraIssuesBrowseUrl, String containerString) {
-        this.gitlabIssuesUrl = gitlabIssuesUrl;
-        //System.out.println("gitlabIssuesUrl = " + gitlabIssuesUrl);
-        this.gitlabAuthHeader = "Bearer "+gitlabAccessToken;
-        //System.out.println("gitlabAuthHeader = " + gitlabAuthHeader);
-        this.jiraAuthHeader = "Basic "+Base64.getEncoder().encodeToString((jiraUsername+":"+jiraPassword).getBytes());
-        //System.out.println("jiraAuthHeader = " + jiraAuthHeader);
-        this.jiraSearchApiUrl = jiraSearchApiUrl;
-        //System.out.println("jiraSearchApiUrl = " + jiraSearchApiUrl);
-        this.jiraIssuesBrowseUrl = jiraIssuesBrowseUrl;
-        //System.out.println("jiraIssuesBrowseUrl = " + jiraIssuesBrowseUrl);
-        this.containerString = containerString;
-        //System.out.println("containerString = " + containerString);
+
+        if (this.gitlabIssuesUrl == null) {
+            System.out.println("Environment variable GITLAB_ISSUES_URL seems not to be set.");
+            System.exit(1);
+        }
+
+        if (gitlabAccessToken == null) {
+            System.out.println("Environment variable GITLAB_ACCESS_TOKEN seems not to be set.");
+            System.exit(1);
+        }
+
+        if (jiraUsername == null) {
+            System.out.println("Environment variable JIRA_USERNAME seems not to be set.");
+            System.exit(1);
+        }
+
+        if (jiraPassword == null) {
+            System.out.println("Environment variable JIRA_PASSWORD seems not to be set.");
+            System.exit(1);
+        }
+
+        if (this.jiraSearchApiUrl == null) {
+            System.out.println("Environment variable JIRA_SEARCH_API_URL seems not to be set.");
+            System.exit(1);
+        }
+
+        if (this.jiraIssuesBrowseUrl == null) {
+            System.out.println("Environment variable JIRA_ISSUE_BROWSER_URL seems not to be set.");
+            System.exit(1);
+        }
+
+        if (this.containerString == null) {
+            System.out.println("Environment variable CONTAINER_STRING seems not to be set.");
+            System.exit(1);
+        }
+
 
         //fetch all Gitlab issues
         gitlabIssues = new ArrayList<GitlabIssue>();

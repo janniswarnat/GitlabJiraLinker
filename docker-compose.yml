@@ -1,9 +1,0 @@
-version: '3.5'
-services:
-  gitlab-jira-linker:
-    image: "janniswarnat/gitlab-jira-linker:latest"
-    ports:
-      - 8080:8080
-
-
-
