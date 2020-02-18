@@ -50,7 +50,7 @@ public class GitlabJiraLinker {
         String jiraPassword = System.getenv("JIRA_PASSWORD");
         this.jiraAuthHeader = "Basic " + Base64.getEncoder().encodeToString((jiraUsername + ":" + jiraPassword).getBytes());
         this.jiraSearchApiUrl = System.getenv("JIRA_SEARCH_API_URL");
-        this.jiraIssuesBrowseUrl = System.getenv("JIRA_ISSUE_BROWSER_URL");
+        this.jiraIssuesBrowseUrl = System.getenv("JIRA_ISSUE_BROWSE_URL");
         this.containerString = System.getenv("CONTAINER_STRING");
 
 
@@ -80,7 +80,7 @@ public class GitlabJiraLinker {
         }
 
         if (this.jiraIssuesBrowseUrl == null) {
-            System.out.println("Environment variable JIRA_ISSUE_BROWSER_URL seems not to be set.");
+            System.out.println("Environment variable JIRA_ISSUE_BROWSE_URL seems not to be set.");
             System.exit(1);
         }
 

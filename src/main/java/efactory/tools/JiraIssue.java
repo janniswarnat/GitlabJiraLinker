@@ -7,35 +7,17 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.*;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({
-        "id",
-        "key",
-        "fields"
-})
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JiraIssue {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonPropertyOrder({
-            "status",
-            "summary"
-    })
     @JsonIgnoreProperties(ignoreUnknown = true)
     public class Fields {
 
         @JsonInclude(JsonInclude.Include.NON_NULL)
-        @JsonPropertyOrder({
-                "name",
-                "id"
-        })
         @JsonIgnoreProperties(ignoreUnknown = true)
         public class Status {
             @JsonInclude(JsonInclude.Include.NON_NULL)
-            @JsonPropertyOrder({
-                    "id",
-                    "name"
-            })
-
             @JsonProperty("name")
             private String name;
             @JsonProperty("id")
@@ -117,27 +99,36 @@ public class JiraIssue {
 
     }
 
-    @JsonProperty("id")
+    //@JsonProperty("id")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String id;
     @JsonProperty("key")
     private String key;
-    @JsonProperty("fields")
+    //@JsonProperty("fields")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Fields fields;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
+    @JsonProperty("web-url")
+    public String getWebUrl (){
+        return System.getenv("JIRA_ISSUE_BROWSE_URL")+getKey();
+    }
+
+    @JsonProperty("__children")
     public ArrayList<GitlabIssue> getLinkedGitlabIssues() {
         return linkedGitlabIssues;
     }
 
+    @JsonProperty("__children")
     public void setLinkedGitlabIssues(ArrayList<GitlabIssue> linkedGitlabIssues) {
         this.linkedGitlabIssues = linkedGitlabIssues;
     }
 
-    @JsonProperty("linked-gitlab-issues")
+    @JsonProperty("__children")
     private ArrayList<GitlabIssue> linkedGitlabIssues = new ArrayList<GitlabIssue>();
 
-    @JsonProperty("id")
+    @JsonIgnore
     public String getId() {
         return id;
     }
@@ -165,6 +156,16 @@ public class JiraIssue {
     @JsonProperty("fields")
     public void setFields(Fields fields) {
         this.fields = fields;
+    }
+
+    @JsonProperty("status")
+    public String getStatus() {
+        return getFields().getStatus().getName();
+    }
+
+    @JsonProperty("summary")
+    public String getSummary() {
+        return getFields().getSummary();
     }
 
     //@JsonAnyGetter

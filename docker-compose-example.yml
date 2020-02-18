@@ -10,7 +10,7 @@ services:
       - JIRA_USERNAME=jannis.warnat
       - JIRA_PASSWORD=***
       - JIRA_SEARCH_API_URL=http://jira.fit.fraunhofer.de/rest/api/latest/search?jql=project=EF+order+by+key&maxResults=-1
-      - JIRA_ISSUE_BROWSER_URL=https://jira.fit.fraunhofer.de/jira/browse/
+      - JIRA_ISSUE_BROWSE_URL=https://jira.fit.fraunhofer.de/jira/browse/
       - CONTAINER_STRING=§§--§§
 
 

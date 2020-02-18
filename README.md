@@ -19,7 +19,7 @@ You need to set the following environment variables in your docker-compose.yml f
 * `JIRA_USERNAME`.
 * `JIRA_PASSWORD`
 * `JIRA_SEARCH_API_URL`: The Jira API call to retrieve the relevant Jira issues, e.g. http://jira.fit.fraunhofer.de/rest/api/latest/search?jql=project=EF+order+by+key&maxResults=-1.
-* `JIRA_ISSUE_BROWSER_URL`: The base URL by which to browse the Jira issues via their keys, e.g. https://jira.fit.fraunhofer.de/jira/browse/
+* `JIRA_ISSUE_BROWSE_URL`: The base URL by which to browse the Jira issues via their keys, e.g. https://jira.fit.fraunhofer.de/jira/browse/
 * `CONTAINER_STRING`: The string to put the links to Jira issues between in Gitlab descriptions, currently `§§--§§` 
 
 ## Run
