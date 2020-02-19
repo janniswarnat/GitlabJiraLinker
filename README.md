@@ -2,6 +2,10 @@
 
 Tool to display Jira issues and their linked Gitlab issues.
 
+## Prerequisites
+
+Docker and docker-compose
+
 ## Issue linking
 
 Enter a comma separated list of Jira issue keys between two strings `§§--§§` anywhere in the description of a Gitlab issue. Example:
@@ -10,7 +14,7 @@ Enter a comma separated list of Jira issue keys between two strings `§§--§§`
 §§--§§EF-69,EF-70§§--§§ 
 ```
 
-## Configure
+## Configure gitlab-jira-linker API
 
 You need to set the following environment variables in your docker-compose.yml file:
 
@@ -27,12 +31,15 @@ You need to set the following environment variables in your docker-compose.yml f
 The API is a Spring boot application and can be started with
 
 ```bash
-docker-compose up
+docker-compose up -d gitlab-jira-linker
 ```
 
-This will expose port 8080. To get the list of Jira issues as json, open this page in your browser:
+This will expose port 8080. To get the list of Jira issues as json, open http://localhost:8080/links in your browser.
 
-```
-http://localhost:8080/links
+Start nginx to serve the website defined in `index.html`
+
+```bash
+docker-compose up -d nginx
 ```
 
+The website will be available at http://localhost:8081. It uses Handsontable (https://handsontable.com/) to convert the json served by the API to an HTML table.

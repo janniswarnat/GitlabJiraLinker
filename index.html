@@ -1,0 +1,52 @@
+<html>
+<header><title>This is title</title></header>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css" rel="stylesheet">
+    <script>
+        const userAction = async () => {
+            const response = await fetch('http://localhost:8080/links');
+            const myJson = await response.json(); //extract JSON from the http response
+
+            function htmlRenderer(instance, td, row, col, prop, value, cellProperties) {
+                td.innerHTML = Handsontable.helper.stringify(value);
+                return td;
+            }
+
+            function trackerRenderer(instance, td, row, col, prop, value, cellProperties) {
+                Handsontable.renderers.TextRenderer.apply(this, arguments);
+                if (value === "Jira") {
+                    td.style.background = '#9FF';
+                } else if (value === "Gitlab") {
+                    td.style.background = '#CEC';
+                    td.style.fontStyle = 'italic';
+                }
+            }
+
+            const container = document.getElementById('example');
+            const hot5 = new Handsontable(container, {
+                data: myJson,
+                dropdownMenu: true,
+                filters: true,
+                rowHeaders: true,
+                nestedRows: true,
+                contextMenu: true,
+                colHeaders: ['Tracker', 'Link', 'Status', 'Web-URL'],
+                licenseKey: 'non-commercial-and-evaluation',
+                columns: [
+                    {data: 'tracker', renderer: trackerRenderer},
+                    {data: 'summary', renderer: htmlRenderer},
+                    {data: 'status'}
+                ]
+            });
+        }
+    </script>
+</head>
+<body>
+<!--Hello World!-->
+<script type="text/javascript">
+    userAction();
+</script>
+<div id="example"></div>
+</body>
+</html>

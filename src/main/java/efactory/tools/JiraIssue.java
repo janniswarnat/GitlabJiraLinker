@@ -99,18 +99,16 @@ public class JiraIssue {
 
     }
 
-    //@JsonProperty("id")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty(value = "id", access = JsonProperty.Access.WRITE_ONLY)
     private String id;
-    @JsonProperty("key")
+    @JsonProperty(value = "key", access = JsonProperty.Access.WRITE_ONLY)
     private String key;
-    //@JsonProperty("fields")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty(value = "fields", access = JsonProperty.Access.WRITE_ONLY)
     private Fields fields;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    @JsonProperty("web-url")
+    @JsonIgnore
     public String getWebUrl (){
         return System.getenv("JIRA_ISSUE_BROWSE_URL")+getKey();
     }
@@ -165,7 +163,13 @@ public class JiraIssue {
 
     @JsonProperty("summary")
     public String getSummary() {
-        return getFields().getSummary();
+        String hyperlink = "<a href=" + getWebUrl() + ">" + getFields().getSummary() + "</a>";
+        return hyperlink;
+    }
+
+    @JsonProperty("tracker")
+    public String getTracker() {
+        return "Jira";
     }
 
     //@JsonAnyGetter

@@ -15,13 +15,11 @@ public class GitlabIssue {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String title;
-    //@JsonProperty("description")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty(value = "description", access = JsonProperty.Access.WRITE_ONLY)
     private String description;
-    //@JsonProperty("state")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty(value = "state", access = JsonProperty.Access.WRITE_ONLY)
     private String state;
-    @JsonProperty("web-url")
+    @JsonProperty(value = "web-url", access = JsonProperty.Access.WRITE_ONLY)
     private String webUrl;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
@@ -33,7 +31,13 @@ public class GitlabIssue {
 
     @JsonProperty("summary")
     public String getSummary() {
-        return getTitle();
+        String hyperlink = "<a href=" + getWebUrl() + ">" + getTitle() + "</a>";
+        return hyperlink;
+    }
+
+    @JsonProperty("tracker")
+    public String getTracker() {
+        return "Gitlab";
     }
 
     @JsonProperty("title")
