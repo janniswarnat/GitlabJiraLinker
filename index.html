@@ -1,5 +1,5 @@
 <html>
-<header><title>This is title</title></header>
+<header><title>Jira and Gitlab linked issues</title></header>
 <head>
     <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css" rel="stylesheet">
@@ -31,10 +31,11 @@
                 rowHeaders: true,
                 nestedRows: true,
                 contextMenu: true,
-                colHeaders: ['Tracker', 'Link', 'Status', 'Web-URL'],
+                colHeaders: ['Tracker', 'Issue Type', 'Link', 'Status'],
                 licenseKey: 'non-commercial-and-evaluation',
                 columns: [
                     {data: 'tracker', renderer: trackerRenderer},
+                    {data: 'issuetype'},
                     {data: 'summary', renderer: htmlRenderer},
                     {data: 'status'}
                 ]

@@ -58,12 +58,68 @@ public class JiraIssue {
             }
         }
 
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public class IssueType {
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            @JsonProperty("name")
+            private String name;
+            @JsonProperty("id")
+            private String id;
+            @JsonIgnore
+            private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+
+            @JsonProperty("name")
+            public String getName() {
+                return name;
+            }
+
+            @JsonProperty("name")
+            public void setName(String name) {
+                this.name = name;
+            }
+
+            @JsonProperty("id")
+            public String getId() {
+                return id;
+            }
+
+            @JsonProperty("id")
+            public void setId(String id) {
+                this.id = id;
+            }
+
+            //@JsonAnyGetter
+            @JsonIgnore
+            public Map<String, Object> getAdditionalProperties() {
+                return this.additionalProperties;
+            }
+
+            //@JsonAnySetter
+            @JsonIgnore
+            public void setAdditionalProperty(String name, Object value) {
+                this.additionalProperties.put(name, value);
+            }
+        }
+
         @JsonProperty("status")
         private Status status;
+        @JsonProperty("issuetype")
+        private IssueType issueType;
         @JsonProperty("summary")
         private String summary;
         @JsonIgnore
         private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+
+        @JsonProperty("issuetype")
+        public IssueType getIssueType() {
+            return issueType;
+        }
+
+        @JsonProperty("issuetype")
+        public void setIssueType(IssueType issueType) {
+            this.issueType = issueType;
+        }
 
         @JsonProperty("status")
         public Status getStatus() {
@@ -109,8 +165,8 @@ public class JiraIssue {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonIgnore
-    public String getWebUrl (){
-        return System.getenv("JIRA_ISSUE_BROWSE_URL")+getKey();
+    public String getWebUrl() {
+        return System.getenv("JIRA_ISSUE_BROWSE_URL") + getKey();
     }
 
     @JsonProperty("__children")
@@ -170,6 +226,11 @@ public class JiraIssue {
     @JsonProperty("tracker")
     public String getTracker() {
         return "Jira";
+    }
+
+    @JsonProperty("issuetype")
+    public String getIssueType() {
+        return getFields().getIssueType().getName();
     }
 
     //@JsonAnyGetter

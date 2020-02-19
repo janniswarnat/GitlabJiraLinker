@@ -80,6 +80,12 @@ public class GitlabIssue {
         this.webUrl = webUrl;
     }
 
+    @JsonProperty("issuetype")
+    public String getIssueType() {
+
+        return "Gitlab";
+    }
+
     //@JsonAnyGetter
     @JsonIgnore
     public Map<String, Object> getAdditionalProperties() {
@@ -94,6 +100,6 @@ public class GitlabIssue {
 
     public String toString() {
 
-        return this.getTitle()+" ("+this.getWebUrl()+")";
+        return this.getTitle() + " (" + this.getWebUrl() + ")";
     }
 }

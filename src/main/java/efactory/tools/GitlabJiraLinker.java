@@ -192,54 +192,7 @@ public class GitlabJiraLinker {
     }
 
     public static void main(String args[]) throws IOException {
-        //read properties from parameters
-        //String gitlabIssuesUrl = System.getProperty("gitlab.issues-url");
-        //String gitlabAuthHeader = "Bearer " + System.getProperty("gitlab.access-token");
-        //String jiraUserPass = System.getProperty("jira.username") + ":" + System.getProperty("jira.password");
-        //String jiraAuthHeader = "Basic " + Base64.getEncoder().encodeToString(jiraUserPass.getBytes());
-        //String jiraSearchApiUrl = System.getProperty("jira.search-api-url");
-        //String jiraIssuesBrowseUrl = System.getProperty("jira.issues-browse-url");
-        //String containerString = "#--#";
-
-        //GitlabJiraLinker linker = new GitlabJiraLinker(gitlabIssuesUrl, gitlabAuthHeader, jiraAuthHeader, jiraUserPass, jiraSearchApiUrl, jiraIssuesBrowseUrl, containerString);
-
-
-//        for (JiraIssue issue : linker.getJiraIssues()) {
-//            if (issue.getKey().equals("EF-69")) {
-//                (new ObjectMapper()).writeValue(new File("jira-issue.json"), issue);
-//            }
-//        }
-//
-//        new ObjectMapper().writeValue(new File("gitlab-issue.json"), linker.getGitlabIssues().get(0));
         SpringApplication.run(GitlabJiraLinker.class, args);
-
-        //write issues to html
-//        ContainerTag page = html(
-//                head(
-//                        title("Jira issues")
-//                ),
-//                body(
-//                        div(attrs("#jiraIssues"),
-//                                each(jiraIssues, jiraIssue ->
-//                                        div(attrs(".jiraIssue"),
-//                                                h3(jiraIssue.getKey() + " " + jiraIssue.getFields().getSummary()),
-//                                                p("Status: " + jiraIssue.getFields().getStatus().getName()),
-//                                                a(jiraIssuesBrowseUrl + jiraIssue.getKey()).withHref(jiraIssuesBrowseUrl + jiraIssue.getKey()),
-//                                                h4("Linked Gitlab issues:"),
-//                                                ul(each(jiraIssue.getLinkedGitlabIssues(), gitlabIssue -> li(attrs(".gitlabIssue"),
-//                                                        h5(gitlabIssue.getTitle()),
-//                                                        p("State: " + gitlabIssue.getState()),
-//                                                        a(gitlabIssue.getWebUrl()).withHref(gitlabIssue.getWebUrl())
-//                                                )))
-//                                        ).withStyle("border: 1px solid black"))
-//                        )
-//                )
-//        );
-
-//        Appendable writer = new FileWriter("jira-issues.html");
-//        page.render(writer);
-//        ((FileWriter) writer).close();
-
     }
 
 }
